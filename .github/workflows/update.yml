@@ -1,0 +1,78 @@
+name: Update Bypass Paywalls Clean
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "23 */6 * * *"
+permissions:
+  contents: write
+jobs:
+  update-bpc:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out this repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Install Nix
+        uses: cachix/install-nix-action@v27
+      - name: Update overlay.nix
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          tmp="$(mktemp -d)"
+
+          repo_url="https://gitflic.ru/project/magnolia1234/bpc_uploads.git"
+          git clone --depth=1 --branch main "$repo_url" "$tmp/bpc"
+
+          cd "$tmp/bpc"
+
+          # Find files matching bypass_paywalls_clean-X.Y.Z.xpi, ignoring custom/latest variants.
+          latest_file="$(
+            find . -maxdepth 1 -type f -printf '%f\n' \
+              | grep -E '^bypass_paywalls_clean-[0-9]+(\.[0-9]+)*\.xpi$' \
+              | sort -V \
+              | tail -n1
+          )"
+
+          if [ -z "${latest_file:-}" ]; then
+            echo "No matching XPI found in GitFlic repo root"
+            exit 1
+          fi
+
+          version="${latest_file#bypass_paywalls_clean-}"
+          version="${version%.xpi}"
+
+          commit="$(git rev-parse HEAD)"
+          url="https://gitflic.ru/project/magnolia1234/bpc_uploads/blob/raw?file=${latest_file}&commit=${commit}"
+
+          cd "$GITHUB_WORKSPACE"
+
+          hash="$(
+            nix store prefetch-file --json --name "$latest_file" "$url" \
+              | jq -r '.hash'
+          )"
+
+          echo "latest_file=$latest_file"
+          echo "version=$version"
+          echo "commit=$commit"
+          echo "url=$url"
+          echo "hash=$hash"
+
+          escaped_url="$(printf '%s\n' "$url" | sed 's/[&]/\\&/g')"
+          sed -Ei \
+            -e 's|version = "[^"]+";|version = "'"$version"'";|' \
+            -e 's|url = "https://gitflic\.ru/project/magnolia1234/bpc_uploads/blob/raw\?file=[^"]+";|url = "'"$escaped_url"'";|' \
+            -e 's|hash = "sha256-[^"]+";|hash = "'"$hash"'";|' \
+            overlay.nix
+
+          if git diff --quiet -- overlay.nix; then
+            echo "overlay.nix already up to date"
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add overlay.nix
+          git commit -m "Bump Bypass Paywalls Clean to ${version}"
+          git push
