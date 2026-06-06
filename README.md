@@ -62,7 +62,11 @@ Then in your [Home Manager](https://nix-community.github.io/home-manager/) confi
       # ...
       # See: https://github.com/nix-community/home-manager/issues/6361#issuecomment-4265948928
       patchJson =
-        path: options:
+        {
+          path,
+          options,
+          extra ? ".",
+        }:
         # `linkGeneration` runs after `writeBoundary`.
         # Writing to the home directory before `linkGeneration` can screw with `home.file` links.
         lib.hm.dag.entryAfter [ "linkGeneration" ] ''
@@ -70,31 +74,47 @@ Then in your [Home Manager](https://nix-community.github.io/home-manager/) confi
           temp="$(${pkgs.coreutils}/bin/mktemp)"
           (${pkgs.coreutils}/bin/cat "$HOME/${path}" 2>/dev/null || printf '%s' '{}') \
             | ${pkgs.jq}/bin/jq --argjson patch ${lib.escapeShellArg (builtins.toJSON options)} '. * $patch' > "$temp"
-          ${pkgs.coreutils}/bin/mv "$temp" "$HOME/${path}"
+          ${pkgs.coreutils}/bin/cat "$temp" | ${pkgs.jq}/bin/jq ${lib.escapeShellArg extra} > "$HOME/${path}"
+          ${pkgs.coreutils}/bin/rm "$temp"
         '';
-
+     
       # Home Manager tries to do this via `home.file`, which prevents dynamic state updates
       # and often doesn't work at all.
       # See: https://github.com/nix-community/home-manager/issues/4889#issuecomment-4265963138
       patchFirefoxExtension =
-        id: options: patchJson ".mozilla/firefox/default/browser-extension-data/${id}/storage.js" options;
+      {
+        extension,
+        options,
+        extra ? ".",
+      }:
+      patchJson {
+        path = ".config/mozilla/firefox/default/browser-extension-data/${extension}/storage.js";
+        options = options;
+        extra = extra;
+      };
       # ...
     in
     {
       # ...
       # Configure it however you want.
       # See: `~/.mozilla/firefox/default/browser-extension-data/magnolia@12.34/storage.js`
-      bypassPaywallsClean = patchFirefoxExtension "magnolia@12.34" {
-        optIn = true;
-        optInFetch = true;
-        optInShown = true;
-        customShown = true;
-        fetchShown = true;
+      bypassPaywallsClean = patchFirefoxExtension {
+        extension = "magnolia@12.34";
 
-        sites = {
-          "Enable new sites by default" = "#options_enable_new_sites";
-          "Check for update rules at startup" = "#options_optin_update_rules";
+        options = {
+          optIn = true;
+          optInFetch = true;
+          optInShown = true;
+          customShown = true;
+          fetchShown = true;
+
+          sites = {
+            "Enable new sites by default" = "#options_enable_new_sites";
+            "Check for update rules at startup" = "#options_optin_update_rules";
+          };
         };
+
+        extra = "del(.sites.\"Show options on update\")";
       };
       # ...
     };
