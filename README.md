@@ -77,10 +77,9 @@ Then in your [Home Manager](https://nix-community.github.io/home-manager/) confi
           ${pkgs.coreutils}/bin/cat "$temp" | ${pkgs.jq}/bin/jq ${lib.escapeShellArg extra} > "$HOME/${path}"
           ${pkgs.coreutils}/bin/rm "$temp"
         '';
-     
+
       # Home Manager tries to do this via `home.file`, which prevents dynamic state updates
       # and often doesn't work at all.
-      # See: https://github.com/nix-community/home-manager/issues/4889#issuecomment-4265963138
       patchFirefoxExtension =
       {
         extension,
