@@ -9,7 +9,7 @@ in
       guid = "magnolia@12.34";
       slug = "bypass-paywalls-clean";
       version = "4.4.2.6";
-      url = "https://gitflic.ru/project/magnolia1234/bpc_uploads/blob/raw?file=bypass_paywalls_clean-4.4.2.6.xpi&commit=c0167ded0f9bc6f8cca608ebc306b7eeb6e30fb9";
+      url = "https://gitflic.ru/project/magnolia1234/bpc_uploads/blob/raw?file=bypass_paywalls_clean-4.4.2.6.xpi&commit=3b843b322e4081276f95991a4f3d4f1047b5b476";
       hash = "sha256-xfCntHGDzHEgonjK/FVz3wzwBSayM4YUxFa/ifk+4XY=";
       permissions = [
         "<all_urls>"
