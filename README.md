@@ -55,68 +55,16 @@ Then in your [Home Manager](https://nix-community.github.io/home-manager/) confi
       };
     };
   };
-  # ...
-  home.activation =
-    # I'm not adding these helpers to this repo. They should be upstreamed.
-    let
-      # ...
-      # See: https://github.com/nix-community/home-manager/issues/6361#issuecomment-4265948928
-      patchJson =
-        {
-          path,
-          options,
-          extra ? ".",
-        }:
-        # `linkGeneration` runs after `writeBoundary`.
-        # Writing to the home directory before `linkGeneration` can screw with `home.file` links.
-        lib.hm.dag.entryAfter [ "linkGeneration" ] ''
-          ${pkgs.coreutils}/bin/mkdir -p "$(${pkgs.coreutils}/bin/dirname "$HOME/${path}")"
-          temp="$(${pkgs.coreutils}/bin/mktemp)"
-          (${pkgs.coreutils}/bin/cat "$HOME/${path}" 2>/dev/null || printf '%s' '{}') \
-            | ${pkgs.jq}/bin/jq --argjson patch ${lib.escapeShellArg (builtins.toJSON options)} '. * $patch' > "$temp"
-          ${pkgs.coreutils}/bin/cat "$temp" | ${pkgs.jq}/bin/jq ${lib.escapeShellArg extra} > "$HOME/${path}"
-          ${pkgs.coreutils}/bin/rm "$temp"
-        '';
+};
+```
 
-      # Home Manager tries to do this via `home.file`, which prevents dynamic state updates
-      # and often doesn't work at all.
-      patchFirefoxExtension =
-      {
-        extension,
-        options,
-        extra ? ".",
-      }:
-      patchJson {
-        path = ".config/mozilla/firefox/default/browser-extension-data/${extension}/storage.js";
-        options = options;
-        extra = extra;
-      };
-      # ...
-    in
-    {
-      # ...
-      # Configure it however you want.
-      # See: `~/.mozilla/firefox/default/browser-extension-data/magnolia@12.34/storage.js`
-      bypassPaywallsClean = patchFirefoxExtension {
-        extension = "magnolia@12.34";
+And you can configure it with [Nix Home Utils](https://github.com/JakeHPark/nix-home-utils):
 
-        options = {
-          optIn = true;
-          optInFetch = true;
-          optInShown = true;
-          customShown = true;
-          fetchShown = true;
-
-          sites = {
-            "Enable new sites by default" = "#options_enable_new_sites";
-            "Check for update rules at startup" = "#options_optin_update_rules";
-          };
-        };
-
-        extra = "del(.sites.\"Show options on update\")";
-      };
-      # ...
-    };
-  # ...
+```nix
+bypassPaywallsClean = {
+  enable = true;
+  # The following are true by default.
+  enableNewSitesByDefault = true;
+  checkUpdateRulesAtStartup = true;
 };
 ```
