@@ -58,7 +58,7 @@ Then in your [Home Manager](https://nix-community.github.io/home-manager/) confi
 };
 ```
 
-And you can configure it with [Nix Home Utils](https://github.com/JakeHPark/nix-home-utils):
+And you can configure it with [Nix Home Utils](https://github.com/JakeHPark/nix-home-utils#firefox-extension-shortcuts):
 
 ```nix
 {
