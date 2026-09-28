@@ -61,10 +61,13 @@ Then in your [Home Manager](https://nix-community.github.io/home-manager/) confi
 And you can configure it with [Nix Home Utils](https://github.com/JakeHPark/nix-home-utils):
 
 ```nix
-bypassPaywallsClean = {
-  enable = true;
-  # The following are true by default.
-  enableNewSitesByDefault = true;
-  checkUpdateRulesAtStartup = true;
-};
+{
+  nix-home-utils.bypassPaywallsClean = {
+    enable = true;
+    # These are set by default for convenience:
+    enableNewSitesByDefault = true;
+    checkUpdateRulesAtStartup = true;
+    showOptionsOnUpdate = false;
+  };
+}
 ```
