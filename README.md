@@ -64,7 +64,6 @@ And you can configure it with [Nix Home Utils](https://github.com/JakeHPark/nix-
 {
   nix-home-utils.bypassPaywallsClean = {
     # All settings are optional:
-    enableAllSites = true;
     enableNewSitesByDefault = true;
     checkUpdateRulesAtStartup = true;
     showOptionsOnUpdate = false;
