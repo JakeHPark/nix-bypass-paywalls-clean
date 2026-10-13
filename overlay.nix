@@ -8,9 +8,9 @@ in
     bypass-paywalls-clean = buildFirefoxXpiAddon {
       guid = "magnolia@12.34";
       slug = "bypass-paywalls-clean";
-      version = "4.4.6.6";
-      url = "https://gitflic.ru/project/magnolia1234/bpc_uploads/blob/raw?file=bypass_paywalls_clean-4.4.6.6.xpi&commit=12eedf54cc00f06d3e143891547d3a915f4f09eb";
-      hash = "sha256-xhBGGDTxMNAbK8FYuDwuq+bkgHe6FHU0ngr5EyPNHXo=";
+      version = "4.4.7.2";
+      url = "https://gitflic.ru/project/magnolia1234/bpc_uploads/blob/raw?file=bypass_paywalls_clean-4.4.7.2.xpi&commit=0a5e14f530326e5312f7b2fdd0b638ed733585ff";
+      hash = "sha256-yj2Tip3vTy/rDd0m8SK3cB4i2kWHGhg+KyygIZZp2z4=";
       permissions = [
         "<all_urls>"
         "cookies"
